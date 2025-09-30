@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>WebXR Dual Color • v17.5 • Seed Palette Boxes + L/R Switchable LFO</title>
+<title>WebXR Dual Color • v17.5 • Seed Boxes + L/R Switchable LFO (Fixed eye freeze)</title>
 <style>
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:#000;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif}
@@ -30,8 +30,6 @@
   .radios{display:flex;gap:16px;align-items:center}
   .radios label{display:flex;gap:6px;align-items:center;font-size:12px}
   small.hint{opacity:.8}
-  #err{position:fixed;left:12px;top:60px;z-index:9000;color:#fff;background:#b00020;padding:6px 10px;border-radius:8px;
-       font:12px ui-monospace,Consolas,monospace;display:none;max-width:70vw;white-space:pre-line}
 </style>
 </head>
 <body>
@@ -47,14 +45,15 @@
     <div class="rowBtns">
       <button id="startBtn" class="ok">시작</button>
       <button id="stopBtn" class="stop">중지</button>
-      <button id="nextBtn" class="ghost">배경 다음 색</button>
+      <button id="nextBtn" class="ghost">배경 다음 색(강제)</button>
       <button id="seedToggleBtn" class="ghost">Seed 모드 (N)</button>
       <button id="resetBtn" class="ghost">Seed 초기화</button>
       <button id="enterVR" title="VRButton 클릭">Enter VR</button>
     </div>
     <hr>
 
-    <div class="row"><label>배경 유지 시간</label><input id="holdSec" type="range" min="3" max="20" step="1" value="8"><span id="holdSecVal" class="val">8s</span></div>
+    <div class="row"><label>배경 자동 전환 주기</label><input id="holdSec" type="range" min="3" max="20" step="1" value="8"><span id="holdSecVal" class="val">8s</span></div>
+    <p style="margin:0 0 8px 8px;"><small class="hint">※ 자동 전환은 <b>LFO 끝점</b>(가중치 0 근처)에서만 실행됩니다. 수렴/복귀 중에는 고정된 눈의 색이 바뀌지 않습니다.</small></p>
 
     <h3>수렴/복귀 LFO (어느 눈을 변조할지 선택)</h3>
     <div class="row">
@@ -67,9 +66,8 @@
     </div>
     <div class="row"><label>수렴 시간(초)</label><input id="convergeSec" type="range" min="2" max="20" step="1" value="8"><span id="convergeSecVal" class="val">8s</span></div>
     <div class="row"><label>복귀 시간(초)</label><input id="returnSec"   type="range" min="2" max="20" step="1" value="8"><span id="returnSecVal" class="val">8s</span></div>
-    <p style="margin:6px 0 10px 8px;"><small class="hint">선택한 눈이 <b>자기값 → (수렴) → 반대쪽 값 → (복귀) → 자기값</b>을 반복합니다.</small></p>
 
-    <h3>좌/우 명도 · 채도 · 리프트 (슬라이더는 ‘기준 자기값’)</h3>
+    <h3>좌/우 명도 · 채도 · 리프트 (슬라이더는 ‘자기값’)</h3>
     <div class="row"><label>좌 명도</label><input id="gainL" type="range" min="50" max="240" step="1" value="160"><span id="gainLVal" class="val">160%</span></div>
     <div class="row"><label>좌 채도</label><input id="satL"  type="range" min="0"   max="300" step="1" value="170"><span id="satLVal" class="val">1.70×</span></div>
     <div class="row"><label>좌 리프트</label><input id="liftL" type="range" min="-50" max="50"  step="1" value="0"><span id="liftLVal" class="val">+0.00</span></div>
@@ -77,36 +75,11 @@
     <div class="row"><label>우 명도</label><input id="gainR" type="range" min="50" max="240" step="1" value="100"><span id="gainRVal" class="val">100%</span></div>
     <div class="row"><label>우 채도</label><input id="satR"  type="range" min="0"   max="300" step="1" value="100"><span id="satRVal" class="val">1.00×</span></div>
     <div class="row"><label>우 리프트</label><input id="liftR" type="range" min="-50" max="50"  step="1" value="0"><span id="liftRVal" class="val">+0.00</span></div>
-
-    <h3>녹화 (좌/우 선택 저장)</h3>
-    <div class="row"><label>녹화 대상</label>
-      <div class="radios">
-        <label><input type="radio" name="eyePick" id="pickL" value="L" checked> 좌안</label>
-        <label><input type="radio" name="eyePick" id="pickR" value="R"> 우안</label>
-        <label style="margin-left:12px;"><input type="checkbox" id="showOverlay" checked> 오버레이 표시</label>
-      </div>
-      <span class="val"></span>
-    </div>
-    <div class="rowBtns">
-      <button id="recStart" class="warn">녹화 시작</button>
-      <button id="recStop" class="stop">녹화 종료 & 저장</button>
-      <button id="recClear" class="ghost">버퍼 비우기</button>
-    </div>
-    <div class="row"><label>녹화 FPS</label><input id="recFps" type="range" min="5" max="60" step="1" value="30"><span id="recFpsVal" class="val">30fps</span></div>
-    <div class="row"><label>해상도</label>
-      <input id="recW" type="number" min="160" max="4096" step="16" value="1280">
-      <span class="val"><input id="recH" type="number" min="90" max="4096" step="10" value="720"></span>
-    </div>
   </div>
 
   <div id="hud">seed:— | XR:OFF | run:false | LFO:R_FIXED w=0.00 | L:#000000 R:#000000 | boxes:0</div>
-  <div id="err"></div>
 
 <script type="module">
-/* ---- 오류 메시지 표시 ---- */
-const errBox=document.getElementById('err');
-function showErr(msg){ errBox.style.display='block'; errBox.textContent=msg; setTimeout(()=>{errBox.style.display='none'}, 3000); }
-
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/webxr/VRButton.js';
 
@@ -118,17 +91,15 @@ const bindVal=(id,fmtf)=>{ const r=$(id), out=$(id+'Val'); const apply=()=>out.t
 ['gainL','gainR'].forEach(id=>bindVal(id,fmt.pct));
 ['satL','satR'].forEach(id=>bindVal(id,fmt.times));
 ['liftL','liftR'].forEach(id=>bindVal(id,fmt.lift));
-bindVal('holdSec',fmt.secs);
-bindVal('convergeSec',fmt.secs);
-bindVal('returnSec',fmt.secs);
-bindVal('recFps',fmt.fps);
+bindVal('holdSec',fmt.secs); bindVal('convergeSec',fmt.secs); bindVal('returnSec',fmt.secs);
 
 /* ===== Seed / RNG / 팔레트 ===== */
 const can=$('seedCanvas'), ctx=can.getContext('2d');
 const state={
-  points:[], seed:0, rng:null, running:false, timer:null,
-  lastHue:null, lastBase:null, lastHexL:0x000000, lastHexR:0x000000,
-  palette: [] // 7개 점 → 팔레트(hex)
+  points:[], seed:0, rng:null, running:false,
+  lastBase:{h:200,s:0.8,l:0.6}, // 단일 베이스(HSL) — 갱신은 LFO 끝점에서만
+  lastHexL:0x000000, lastHexR:0x000000,
+  palette:[]
 };
 let seedMode=true;
 
@@ -143,30 +114,27 @@ function drawPts(){
 function rel(e){const r=can.getBoundingClientRect();const p=(e.touches?e.touches[0]:e);return {x:p.clientX-r.left,y:p.clientY-r.top};}
 let lock=0,lastPt={x:-1e9,y:-1e9};
 function addPt(p){ if(!seedMode) return; const dx=p.x-lastPt.x,dy=p.y-lastPt.y;if(dx*dx+dy*dy<25)return;if(state.points.length>=7)return;state.points.push(p);lastPt=p;drawPts(); }
-function onDown(e){
-  const cx=(e.clientX||e.touches?.[0]?.clientX), cy=(e.clientY||e.touches?.[0]?.clientY);
-  const el = document.elementFromPoint(cx, cy);
+['pointerdown','mousedown','touchstart'].forEach(ev=>can.addEventListener(ev,(e)=>{
+  const el = document.elementFromPoint((e.clientX||e.touches?.[0]?.clientX),(e.clientY||e.touches?.[0]?.clientY));
   if(el && el.closest && el.closest('#controls')) return;
-  if(!seedMode) return;
-  const now=performance.now(); if(now<lock) return; lock=now+80; addPt(rel(e)); e.preventDefault?.();
-}
-['pointerdown','mousedown','touchstart'].forEach(ev=>can.addEventListener(ev,onDown,{passive:false}));
+  if(!seedMode) return; const now=performance.now(); if(now<lock) return; lock=now+80; addPt(rel(e)); e.preventDefault?.();
+},{passive:false}));
 window.addEventListener('resize', fit, {passive:true}); fit();
 
 function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}
 function computeSeed(){let s=0;for(let i=0;i<state.points.length;i++){const p=state.points[i];s^=(((p.x|0)+(p.y|0))<<(i%24));}return (s>>>0)||0xA5A5A5A5;}
 function ensureRNG(){ state.seed = (state.points.length===7)? computeSeed() : ((Math.random()*0xffffffff)>>>0);
-  state.rng  = mulberry32(state.seed ^ 0x9E3779B9); updateHUD(); }
+  state.rng  = mulberry32(state.seed ^ 0x9E3779B9); updateHUD(0); }
 
-/* 7개 점 → 팔레트(HSL 기준) */
+/* 7점 → 팔레트 */
 function ptsToPalette(){
   if(state.points.length!==7){ state.palette=[]; return; }
   const cx = can.width/2, cy = can.height/2;
   const maxd = Math.hypot(cx, cy);
   const list=[];
   for(const p of state.points){
-    const ang = Math.atan2(p.y-cy, p.x-cx);   // -PI..PI
-    const hue = ((ang*180/Math.PI)+360)%360;  // 0..360
+    const ang = Math.atan2(p.y-cy, p.x-cx);
+    const hue = ((ang*180/Math.PI)+360)%360;
     const rad = Math.hypot(p.x-cx, p.y-cy)/maxd;
     const s = 0.55 + Math.min(0.35, rad*0.8);
     const l = 0.55 + (1-rad)*0.25;
@@ -175,7 +143,19 @@ function ptsToPalette(){
   state.palette = list;
 }
 
-/* ===== 색 도우미 ===== */
+/* ===== 색 유틸 ===== */
+function nextBaseHSL(){
+  const rng = state.rng?state.rng:Math.random;
+  const h = rng()*360;
+  const s = 0.70 + rng()*0.22;
+  const l = 0.56 + rng()*0.20;
+  return {h,s,l};
+}
+function transformHSL(hsl, gainPct, satPct, liftPct){
+  const s = Math.max(0, Math.min(1, hsl.s * (satPct/100)));
+  let   l = Math.max(0, Math.min(1, hsl.l * (gainPct/100) + (liftPct/100)));
+  return {h:hsl.h, s, l};
+}
 function hslToHex(h,s,l){
   const c=(1-Math.abs(2*l-1))*s,hp=((h%360)+360)%360/60,x=c*(1-Math.abs(hp%2-1)); let r=0,g=0,b=0;
   if(hp<1){r=c;g=x;} else if(hp<2){r=x;g=c;} else if(hp<3){g=c;b=x;} else if(hp<4){g=x;b=c;} else if(hp<5){r=x;b=c;} else {r=c;b=x;}
@@ -197,16 +177,16 @@ const scene=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.01,20);
 scene.add(cam);
 
-/* 라이트(부드러운 음영) */
+/* 라이트 */
 const hemi = new THREE.HemisphereLight(0xffffff, 0x202040, 1.1);
-const dir1 = new THREE.DirectionalLight(0xffffff, 1.0); dir1.position.set( 1.2, 1.2,  1.6);
-const dir2 = new THREE.DirectionalLight(0xffffff, 0.5); dir2.position.set(-1.0,-0.6, -0.6);
+const dir1 = new THREE.DirectionalLight(0xffffff, 1.1); dir1.position.set( 1.2, 1.2,  1.6);
+const dir2 = new THREE.DirectionalLight(0xffffff, 0.6); dir2.position.set(-1.0,-0.6, -0.6);
 scene.add(hemi, dir1, dir2);
 
-/* 카메라 레이어: 미러 보기용으로 1,2 둘 다 허용 */
+/* 카메라 레이어 */
 cam.layers.enable(1); cam.layers.enable(2);
 
-/* 좌/우 컬러 배경 평면 (깊이 off) */
+/* 좌/우 컬러 배경 */
 const geoBG=new THREE.PlaneGeometry(4,4,1,1);
 const matL=new THREE.MeshBasicMaterial({color:0x000000, depthTest:false, depthWrite:false});
 const matR=new THREE.MeshBasicMaterial({color:0x000000, depthTest:false, depthWrite:false});
@@ -217,7 +197,7 @@ quadL.layers.set(1); quadR.layers.set(2);
 quadL.renderOrder = 0; quadR.renderOrder = 0;
 cam.add(quadL); cam.add(quadR);
 
-/* ===== 박스 풀 (4–6개) — 색은 Seed 팔레트에서 랜덤 ===== */
+/* ===== 박스 풀 (4–6개) — 처음부터 또렷한 색 ===== */
 const BOX_MIN = 4, BOX_MAX = 6;
 const ACTIVE_COUNT = Math.floor(Math.random()*(BOX_MAX-BOX_MIN+1))+BOX_MIN; // 4~6
 const Z_START_MIN = -12.0, Z_START_MAX = -6.0;
@@ -225,7 +205,6 @@ const Z_NEAR = -0.35;
 const XY_SPREAD = 0.28;
 const SPEED_MIN = 0.8, SPEED_MAX = 1.6;
 const ROT_MIN = 0.3, ROT_MAX = 0.9;
-const OPACITY_MIN = 0.70, OPACITY_MAX = 0.98;
 
 const boxes=[];
 const boxGroup = new THREE.Group();
@@ -241,29 +220,43 @@ function pickPaletteHex(){
   }
   return 0xffffff * Math.random() | 0;
 }
+function makeMaterialFromHex(hex){
+  const col = new THREE.Color(hex);
+  const mat = new THREE.MeshStandardMaterial({
+    color: col.clone(),
+    metalness: 0.0,
+    roughness: 0.42,
+    transparent: false,           // 처음부터 또렷하게
+    opacity: 1.0,
+    emissive: col.clone(),
+    emissiveIntensity: 0.35       // 멀리서도 색이 분명하게
+  });
+  return mat;
+}
+function recolor(mesh){
+  const hex = pickPaletteHex();
+  const col = new THREE.Color(hex);
+  mesh.material.color.copy(col);
+  mesh.material.emissive.copy(col);
+  mesh.material.emissiveIntensity = 0.35;
+}
 function spawnOne(){
   const sx = rand(0.28, 0.9);
   const sy = rand(0.22, 0.7);
   const sz = rand(0.45, 1.35);
   const geo = new THREE.BoxGeometry(sx, sy, sz);
-  const mat = new THREE.MeshStandardMaterial({
-    color: pickPaletteHex(),
-    roughness: 0.42, metalness: 0.0,
-    transparent: true, opacity: rand(OPACITY_MIN, OPACITY_MAX)
-  });
+  const mat = makeMaterialFromHex(pickPaletteHex());
   const mesh = new THREE.Mesh(geo, mat);
   mesh.layers.enable(1); mesh.layers.enable(2);
   respawn(mesh, true);
   return mesh;
 }
-function recolor(mesh){ mesh.material.color.setHex(pickPaletteHex()); }
 function respawn(mesh, first=false){
   mesh.position.set(rand(-XY_SPREAD,XY_SPREAD), rand(-XY_SPREAD,XY_SPREAD), rand(Z_START_MIN, Z_START_MAX));
   mesh.rotation.set(rand(0,Math.PI), rand(0,Math.PI), rand(0,Math.PI));
-  mesh.material.opacity = rand(OPACITY_MIN, OPACITY_MAX);
   mesh.userData.vz = rand(SPEED_MIN, SPEED_MAX);
   mesh.userData.vr = new THREE.Vector3(rand(ROT_MIN,ROT_MAX), rand(ROT_MIN,ROT_MAX), rand(ROT_MIN,ROT_MAX));
-  recolor(mesh);
+  recolor(mesh); // 스폰 시 즉시 팔레트 색 적용(처음부터 또렷)
   if(first) boxGroup.add(mesh);
 }
 function buildPool(){
@@ -271,7 +264,7 @@ function buildPool(){
     const m = spawnOne();
     boxes.push(m);
   }
-  updateHUD();
+  updateHUD(0);
 }
 
 /* ===== XR 레이어 매핑 ===== */
@@ -282,33 +275,15 @@ function mapEyeLayers(){
     xrCam.cameras[1].layers.disableAll?.(); xrCam.cameras[1].layers.set(2); // right
   }
 }
-renderer.xr.addEventListener('sessionstart', ()=>{ mapEyeLayers(); updateHUD(); });
-renderer.xr.addEventListener('sessionend',  ()=> updateHUD() );
+renderer.xr.addEventListener('sessionstart', ()=>{ mapEyeLayers(); updateHUD(0); });
+renderer.xr.addEventListener('sessionend',  ()=> updateHUD(0) );
 
-/* ===== 배경색: 좌/우 분리 + LFO(변조 대상 선택 가능) ===== */
-function nextBaseHSL(){
-  if(!state.rng) ensureRNG();
-  let h, tries=0;
-  do{ h = state.rng()*360; tries++; } while (state.lastHue!=null && Math.abs(((h - state.lastHue + 540)%360)-180) < 18 && tries<8);
-  state.lastHue = h;
-  const s = 0.75 + state.rng()*0.20;
-  const l = 0.58 + state.rng()*0.18;
-  return {h,s,l};
-}
-function transformHSL(hsl, gainPct, satPct, liftPct){
-  const s = Math.max(0, Math.min(1, hsl.s * (satPct/100)));
-  let   l = Math.max(0, Math.min(1, hsl.l * (gainPct/100) + (liftPct/100)));
-  return {h:hsl.h, s, l};
-}
-function hexFromHSL(hsl){ return hslToHex(hsl.h, hsl.s, hsl.l); }
-
-/* 좌/우 슬라이더값 읽기 (자기값) */
+/* ===== 배경색: 좌/우 분리 + LFO(변조 대상 선택) — 고정 눈 freeze 보장 ===== */
 function readLeftBase(){ return { g:Number($('gainL').value), s:Number($('satL').value), l:Number($('liftL').value) }; }
 function readRight(){   return { g:Number($('gainR').value), s:Number($('satR').value), l:Number($('liftR').value) }; }
 
-/* LFO 설정 */
 const lfo={
-  mode:'R_FIXED', // 'L_FIXED' = 좌안 픽스(우안 변조), 'R_FIXED' = 우안 픽스(좌안 변조)
+  mode:'R_FIXED', // 'L_FIXED' or 'R_FIXED'
   start: performance.now(),
   conv: Number($('convergeSec').value),
   ret:  Number($('returnSec').value)
@@ -318,7 +293,6 @@ $('fixRight').addEventListener('change',()=>{ if($('fixRight').checked){ lfo.mod
 $('convergeSec').addEventListener('input', ()=>{ lfo.conv = Math.max(2, Math.min(20, Number($('convergeSec').value))); lfo.start=performance.now(); });
 $('returnSec').addEventListener('input',  ()=>{ lfo.ret  = Math.max(2, Math.min(20, Number($('returnSec').value)));  lfo.start=performance.now(); });
 
-/* 비대칭 삼각파: 0→1 (Tconv) → 0 (Tret) */
 function lfoWeight(){
   const T1 = Math.max(2, lfo.conv), T2 = Math.max(2, lfo.ret);
   const period = T1 + T2;
@@ -327,94 +301,105 @@ function lfoWeight(){
   if(ph <= T1) return ph / T1;           // 0→1 (수렴)
   return 1 - (ph - T1) / T2;             // 1→0 (복귀)
 }
-function mix(a,b,w){ return a*(1-w) + b*w; }
 
-/* 좌/우 배경색 적용 (LFO 모드에 따라 한쪽만 변조) */
+/* 배경 색 적용 (단일 베이스 state.lastBase 를 사용)
+   — 베이스 갱신은 LFO 끝점(가중치≈0)에서만 이루어지므로,
+     ‘고정된 눈’은 수렴/복귀 중 절대 변하지 않음 */
 function applyFromBase(){
-  const base = state.lastBase || nextBaseHSL();
+  const base = state.lastBase; // freeze된 베이스
   const L0 = readLeftBase();
   const R0 = readRight();
   const w  = lfoWeight();
 
   let lH, rH;
-
   if(lfo.mode==='L_FIXED'){
-    // 좌안 픽스, 우안이 좌안값으로 수렴/복귀
-    const Rg = mix(R0.g, L0.g, w), Rs = mix(R0.s, L0.s, w), Rl = mix(R0.l, L0.l, w);
+    // 좌안 고정, 우안이 좌안으로 수렴/복귀
+    const Rg = R0.g*(1-w) + L0.g*w, Rs = R0.s*(1-w) + L0.s*w, Rl = R0.l*(1-w) + L0.l*w;
     lH = transformHSL(base, L0.g, L0.s, L0.l);
-    rH = transformHSL(base, Rg,   Rs,   Rl);
+    rH = transformHSL(base, Rg,    Rs,    Rl);
   }else{
-    // 우안 픽스, 좌안이 우안값으로 수렴/복귀
-    const Lg = mix(L0.g, R0.g, w), Ls = mix(L0.s, R0.s, w), Ll = mix(L0.l, R0.l, w);
-    lH = transformHSL(base, Lg,   Ls,   Ll);
-    rH = transformHSL(base, R0.g, R0.s, R0.l);
+    // 우안 고정, 좌안이 우안으로 수렴/복귀
+    const Lg = L0.g*(1-w) + R0.g*w, Ls = L0.s*(1-w) + R0.s*w, Ll = L0.l*(1-w) + R0.l*w;
+    lH = transformHSL(base, Lg,    Ls,    Ll);
+    rH = transformHSL(base, R0.g,  R0.s,  R0.l);
   }
 
-  state.lastHexL = hexFromHSL(lH);
-  state.lastHexR = hexFromHSL(rH);
+  state.lastHexL = hslToHex(lH.h,lH.s,lH.l);
+  state.lastHexR = hslToHex(rH.h,rH.s,rH.l);
   matL.color.setHex(state.lastHexL);
   matR.color.setHex(state.lastHexR);
 
   updateHUD(w);
 }
-function tickNext(){ state.lastBase = nextBaseHSL(); applyFromBase(); }
-function scheduleNext(){
+
+/* 배경 베이스 자동 전환: LFO 끝점(w≈0)일 때만 변경 */
+let baseTimer=null;
+function lfoAtEndpoint(th=0.02){ const w=lfoWeight(); return (w<=th); }
+function baseTick(){
   if(!state.running) return;
+  if(lfoAtEndpoint()){
+    state.lastBase = nextBaseHSL(); // 이 시점에만 베이스 변화 → 고정된 눈은 ‘주기 동안’ 불변
+    applyFromBase();
+    scheduleNext(); // 다음 자동 전환 예약
+  }else{
+    // 아직 수렴/복귀 중이면 잠깐 후 재시도
+    baseTimer = setTimeout(baseTick, 120);
+  }
+}
+function scheduleNext(){
+  if(baseTimer) clearTimeout(baseTimer);
   const ms = Math.max(3, Math.min(20, Number($('holdSec').value))) * 1000;
-  state.timer = setTimeout(()=>{ tickNext(); scheduleNext(); }, ms);
+  baseTimer = setTimeout(baseTick, ms);
 }
 
-/* ===== Start/Stop ===== */
+/* ===== Start/Stop & Seed ===== */
 function requireSevenPoints(){
-  if(state.points.length!==7){
-    showErr('시작할 수 없습니다: 화면에 7개 점을 먼저 찍어 주세요.');
-    return false;
-  }
+  if(state.points.length!==7){ alert('시작할 수 없습니다: 화면에 7개 점을 먼저 찍어 주세요.'); return false; }
   return true;
 }
+function setSeedMode(on){
+  seedMode=!!on;
+  can.style.display = seedMode ? 'block' : 'none';
+  can.style.pointerEvents = seedMode ? 'auto' : 'none';
+  $('seedHelp').style.display = seedMode ? 'block' : 'none';
+  updateHUD(0);
+}
+$('seedToggleBtn').onclick = ()=> setSeedMode(!seedMode);
+
 function startCycle(){
   if(!requireSevenPoints()) return;
-  ensureRNG();
-  ptsToPalette();      // 팔레트 구성
-  if(state.timer) clearTimeout(state.timer);
+  ensureRNG(); ptsToPalette();
   state.running=true;
   setSeedMode(false);
-  lfo.start = performance.now(); // LFO 리셋
-  tickNext();         // 배경 1회 갱신
-  scheduleNext();     // 배경 전환 루프
+  state.lastBase = nextBaseHSL(); // 초기 베이스 확정
+  lfo.start = performance.now();
+  applyFromBase();
+  scheduleNext();
   updateHUD(0);
 }
 function stopCycle(){
-  if(state.timer) clearTimeout(state.timer);
-  state.timer=null;
   state.running=false;
-  updateHUD();
+  if(baseTimer) clearTimeout(baseTimer);
+  baseTimer=null;
+  updateHUD(0);
 }
 $('startBtn').onclick = startCycle;
 $('stopBtn').onclick  = stopCycle;
-$('nextBtn').onclick  = ()=>{ if(!state.running) ensureRNG(); tickNext(); };
+$('nextBtn').onclick  = ()=>{ if(!state.running) ensureRNG(); state.lastBase = nextBaseHSL(); applyFromBase(); };
+
+/* 리셋 */
 $('resetBtn').onclick = ()=>{
   stopCycle();
-  state.points=[]; state.rng=null; state.lastHue=null; state.lastBase=null; state.palette=[];
+  state.points=[]; state.rng=null; state.palette=[];
   setSeedMode(true); drawPts();
   boxes.forEach(m=>respawn(m)); // 위치/색 초기화
 };
 
 /* 슬라이더 즉시 반영 */
-$('holdSec').addEventListener('input', ()=>{ if(state.running){ if(state.timer) clearTimeout(state.timer); scheduleNext(); }});
 ['gainL','satL','liftL','gainR','satR','liftR'].forEach(id=>{
   $(id).addEventListener('input', ()=>{ if(state.running) applyFromBase(); });
 });
-
-/* Seed 모드 */
-function setSeedMode(on){
-  seedMode = !!on;
-  can.style.display = seedMode ? 'block' : 'none';
-  can.style.pointerEvents = seedMode ? 'auto' : 'none';
-  $('seedHelp').style.display = seedMode ? 'block' : 'none';
-  updateHUD();
-}
-$('seedToggleBtn').onclick = ()=> setSeedMode(!seedMode);
+$('holdSec').addEventListener('input', ()=>{ if(state.running) scheduleNext(); });
 
 /* VR 버튼 */
 const vrBtn = VRButton.createButton(renderer);
@@ -422,74 +407,6 @@ vrBtn.style.position='fixed'; vrBtn.style.right='16px'; vrBtn.style.top='16px';
 vrBtn.style.zIndex='6000';
 document.body.appendChild(vrBtn);
 $('enterVR').onclick=()=> vrBtn.click();
-
-/* ===== 녹화 (선택한 눈의 색 화면 저장) ===== */
-const rec = {
-  fps: 30, showOverlay: true, target:'L', running:false,
-  L: { canvas: document.createElement('canvas'), ctx:null, mr:null, chunks:[], timer:null, startAt:null },
-  R: { canvas: document.createElement('canvas'), ctx:null, mr:null, chunks:[], timer:null, startAt:null },
-};
-rec.L.ctx = rec.L.canvas.getContext('2d'); rec.R.ctx = rec.R.canvas.getContext('2d');
-
-function drawRecFrame(side){
-  const slot = rec[side];
-  const w = slot.canvas.width, h = slot.canvas.height;
-  slot.ctx.fillStyle = hexToCss(side==='L'?state.lastHexL:state.lastHexR);
-  slot.ctx.fillRect(0,0,w,h);
-  if(rec.showOverlay){
-    slot.ctx.fillStyle = 'rgba(0,0,0,0.35)'; slot.ctx.fillRect(10,10,380,64);
-    slot.ctx.fillStyle = '#fff'; slot.ctx.font='20px ui-monospace,Consolas,monospace';
-    const startTxt = slot.startAt ? new Date(slot.startAt).toLocaleTimeString() : '--:--:--';
-    slot.ctx.fillText(`${side==='L'?'LEFT':'RIGHT'} • REC since ${startTxt}`, 18, 36);
-    slot.ctx.fillText(hexToCss(side==='L'?state.lastHexL:state.lastHexR), 18, 62);
-  }
-}
-function startRecording(){
-  if(rec.running) return;
-  rec.running = true;
-  rec.target = $('pickR').checked ? 'R' : 'L';
-  rec.showOverlay = $('showOverlay').checked;
-
-  const fps = Number($('recFps').value)||30;
-  const w = Math.max(160, Math.min(4096, Number($('recW').value)||1280));
-  const h = Math.max(90,  Math.min(4096, Number($('recH').value)||720));
-  const slot = rec[rec.target];
-  slot.canvas.width = w; slot.canvas.height = h;
-
-  let mime = 'video/webm;codecs=vp9';
-  if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm;codecs=vp8';
-  if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
-
-  const stream = slot.canvas.captureStream(fps);
-  slot.mr = new MediaRecorder(stream, { mimeType: mime });
-  slot.chunks=[]; slot.startAt=Date.now();
-  slot.mr.ondataavailable = e=>{ if(e.data.size) slot.chunks.push(e.data); };
-  slot.mr.onstop = ()=> downloadBlob(new Blob(slot.chunks,{type:mime}),
-                                     `${rec.target==='L'?'left':'right'}_${new Date(slot.startAt).toISOString().replace(/[:.]/g,'-')}.webm`);
-  slot.mr.start();
-  const intv = Math.max(16, Math.round(1000/fps));
-  slot.timer = setInterval(()=>drawRecFrame(rec.target), intv);
-  updateHUD();
-}
-function stopRecording(){
-  if(!rec.running) return;
-  rec.running=false;
-  ['L','R'].forEach(side=>{
-    const slot = rec[side];
-    if(slot.timer){ clearInterval(slot.timer); slot.timer=null; }
-    try{ slot.mr?.stop(); }catch{}
-  });
-  updateHUD();
-}
-function clearRecording(){ rec.L.chunks=[]; rec.R.chunks=[]; }
-function downloadBlob(blob, filename){
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
-}
-$('recStart').onclick = startRecording;
-$('recStop').onclick  = stopRecording;
-$('recClear').onclick = clearRecording;
-$('showOverlay').addEventListener('change', ()=>{ rec.showOverlay = $('showOverlay').checked; });
 
 /* ===== HUD ===== */
 function updateHUD(w=0){
@@ -501,39 +418,24 @@ let lastT=0;
 renderer.setAnimationLoop((t)=>{
   const dt = (t - lastT) / 1000; lastT = t||0;
 
-  // 좌/우 LFO는 실행 중 매 프레임 갱신
-  if(state.running) applyFromBase();
-
-  // 박스 이동/재스폰
   if(state.running){
+    applyFromBase(); // 프레임마다 LFO 반영 (베이스는 끝점에서만 갱신)
     for(const m of boxes){
       m.rotation.x += m.userData.vr.x * dt;
       m.rotation.y += m.userData.vr.y * dt;
       m.rotation.z += m.userData.vr.z * dt;
-      m.position.z += m.userData.vz * dt;   // 카메라(+z)로 이동
+      m.position.z += m.userData.vz * dt;
       if(m.position.z > Z_NEAR){ respawn(m); }
     }
   }
   renderer.render(scene,cam);
 });
 
-/* ===== 초기화 ===== */
-buildPool();          // 4~6개 생성(정지)
-applyFromBase();      // 초기 좌/우 배경색
-updateHUD();
+/* 초기화 */
+buildPool(); updateHUD(0);
 
-/* 배경 전환 스케줄러 */
-function scheduleNext(){
-  if(!state.running) return;
-  const ms = Math.max(3, Math.min(20, Number($('holdSec').value))) * 1000;
-  state.timer = setTimeout(()=>{ state.lastBase = nextBaseHSL(); applyFromBase(); scheduleNext(); }, ms);
-}
-
-/* 반응형 */
-function onResize(){ cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); fit(); }
-window.addEventListener('resize', onResize, {passive:true});
-
-/* 단축키 */
+/* 반응형 + 단축키 */
+window.addEventListener('resize', ()=>{ cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); fit(); }, {passive:true});
 function togglePanel(){ $('menuToggle').checked=!$('menuToggle').checked; }
 document.addEventListener('keydown', (e)=>{ if(/INPUT|TEXTAREA/.test(e.target.tagName)) return;
   if(e.key==='F1' || e.key==='h' || e.key==='H'){ e.preventDefault(); togglePanel(); }
